@@ -12,13 +12,12 @@
 // 运行：node tools/calibrate.mjs
 
 import { createRunState, stepPhysics, STATUS } from '../src/main/resources/static/js/physics.js';
-import { PHYSICS_DEFAULTS, LEVEL_SPECS } from '../src/main/resources/static/js/config.js';
+import { PHYSICS_DEFAULTS, LEVEL_SPECS, BALL_DEFAULTS } from '../src/main/resources/static/js/config.js';
 
-const BALLS = {
-  FACTORIAL: { code: 'FACTORIAL', name: '阶乘球', step: 2 },
-  TRI: { code: 'TRI', name: '三角阶乘球', step: 1 },
-  SQR: { code: 'SQR', name: '正方阶乘球', step: 1 },
-};
+// 球种定义从 config.js 读取（单一真值来源），改步长后无需再改这里
+const BALLS = Object.fromEntries(
+  BALL_DEFAULTS.map((b) => [b.code, { code: b.code, name: b.name, step: b.step }])
+);
 
 const LEVELS = LEVEL_SPECS.map((s) => ({
   level: s.level,

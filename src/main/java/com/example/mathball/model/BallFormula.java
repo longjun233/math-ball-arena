@@ -10,8 +10,8 @@ import java.math.BigInteger;
  */
 public enum BallFormula {
 
-    /** 阶乘球：f(n) = n!，每击 +2 阶 */
-    FACTORIAL("阶乘球", "n!", 2, 1) {
+    /** 阶乘球：f(n) = n!，每击 +1 阶 */
+    FACTORIAL("阶乘球", "n!", 1, 1) {
         @Override
         public BigInteger value(int n) {
             return Formulas.factorial(n);

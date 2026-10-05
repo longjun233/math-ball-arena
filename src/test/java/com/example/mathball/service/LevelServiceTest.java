@@ -87,7 +87,7 @@ class LevelServiceTest {
                 spec(8, BallFormula.TRI, List.of(60, 100, 140), 100)));
 
         assertEquals("FACTORIAL", service.level(1).formulaCheck().ball());
-        assertEquals(2, service.level(1).formulaCheck().step());
+        assertEquals(1, service.level(1).formulaCheck().step());
         assertEquals("TRI", service.level(8).formulaCheck().ball());
         assertEquals(1, service.level(8).formulaCheck().step());
     }

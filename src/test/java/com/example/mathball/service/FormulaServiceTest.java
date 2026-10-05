@@ -73,9 +73,18 @@ class FormulaServiceTest {
     @Test
     @DisplayName("固定步长：三种球各自恒定且不随关卡变化")
     void stepIsFixed() {
-        assertEquals(2, BallFormula.FACTORIAL.getStep());
+        assertEquals(1, BallFormula.FACTORIAL.getStep());
         assertEquals(1, BallFormula.TRI.getStep());
         assertEquals(1, BallFormula.SQR.getStep());
+    }
+
+    @Test
+    @DisplayName("阶乘球：先升阶后结算，每击 +1")
+    void factorialDamageStepOne() {
+        // 初始 n = 2，第一次碰撞 n -> 3，伤害 3! = 6
+        assertEquals(new BigInteger("6"), service.damage(BallFormula.FACTORIAL, 3));
+        assertEquals(new BigInteger("24"), service.damage(BallFormula.FACTORIAL, 4));
+        assertEquals(new BigInteger("720"), service.damage(BallFormula.FACTORIAL, 6));
     }
 
     @Test
@@ -83,17 +92,17 @@ class FormulaServiceTest {
     void buildCheck() {
         LevelDto.FormulaCheckDto check = service.buildCheck(BallFormula.FACTORIAL, 2, 4);
         assertEquals(2, check.startN());
-        assertEquals(2, check.step());
+        assertEquals(1, check.step());
         assertEquals(4, check.damage().size());
-        // n = 4, 6, 8, 10（每击 +2）
-        assertEquals("24", check.damage().get(0));
-        assertEquals("720", check.damage().get(1));
-        assertEquals("40320", check.damage().get(2));
-        assertEquals("3628800", check.damage().get(3));
-        assertEquals("24", check.cumulative().get(0));
-        assertEquals("744", check.cumulative().get(1));
-        assertEquals("41064", check.cumulative().get(2));
-        assertEquals("3669864", check.cumulative().get(3));
+        // n = 3, 4, 5, 6（每击 +1）
+        assertEquals("6", check.damage().get(0));
+        assertEquals("24", check.damage().get(1));
+        assertEquals("120", check.damage().get(2));
+        assertEquals("720", check.damage().get(3));
+        assertEquals("6", check.cumulative().get(0));
+        assertEquals("30", check.cumulative().get(1));
+        assertEquals("150", check.cumulative().get(2));
+        assertEquals("870", check.cumulative().get(3));
     }
 
     @Test

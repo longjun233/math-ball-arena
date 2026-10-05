@@ -24,7 +24,7 @@ export const PHYSICS_DEFAULTS = {
 export const TRANSITION_DEFAULTS = { enabled: true, bannerMs: 800 };
 
 export const BALL_DEFAULTS = [
-  { code: 'FACTORIAL', name: '阶乘球', formula: 'n!', step: 2, stars: 1, unlocked: true },
+  { code: 'FACTORIAL', name: '阶乘球', formula: 'n!', step: 1, stars: 1, unlocked: true },
   { code: 'TRI', name: '三角阶乘球', formula: 'T(n)!', step: 1, stars: 2, unlocked: true },
   { code: 'SQR', name: '正方阶乘球', formula: '(n²)!', step: 1, stars: 3, unlocked: true },
 ];
