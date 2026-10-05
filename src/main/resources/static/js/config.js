@@ -6,8 +6,8 @@ import { parseBigIntExpr } from './formula.js';
 export const PHYSICS_DEFAULTS = {
   canvasWidth: 900,
   canvasHeight: 760,
-  gravity: 1700,          // 弹跳周期 2*v0/g ≈ 0.494s
-  bounceSpeed: 420,
+  gravity: 1000,          // 放慢球的下落：弹跳周期 2*v0/g = 0.6s，弹跳高度 45px
+  bounceSpeed: 300,
   vxMin: 40,
   vxMax: 160,
   barrierGap: 180,        // 屏障间距放大 → 三道屏障占据屏幕大部分
@@ -38,14 +38,14 @@ export const BALL_DEFAULTS = [
 // 曲线由 tools/design-levels.mjs 生成，27 道屏障全局严格递增，终点 10^300。
 export const LEVEL_SPECS = [
   { level: 1, barriers: ['1', '50', '100'], spikeSpeed: 18 },
-  { level: 2, barriers: ['6105000', '60770000000000', '9.158e21'], spikeSpeed: 20.5 },
-  { level: 3, barriers: ['1.035e31', '6.019e40', '1.418e51'], spikeSpeed: 23.1 },
-  { level: 4, barriers: ['1.142e62', '2.772e73', '1.836e85'], spikeSpeed: 25.6 },
-  { level: 5, barriers: ['3.065e97', '1.207e110', '1.061e123'], spikeSpeed: 28.1 },
-  { level: 6, barriers: ['1.984e136', '7.578e149', '5.701e163'], spikeSpeed: 30.6 },
-  { level: 7, barriers: ['8.182e177', '2.177e192', '1.047e207'], spikeSpeed: 33.2 },
-  { level: 8, barriers: ['8.885e221', '1.304e237', '3.243e252'], spikeSpeed: 35.7 },
-  { level: 9, barriers: ['1.344e268', '9.125e283', '1e300'], spikeSpeed: 38.2 },
+  { level: 2, barriers: ['187', '1815', '118000'], spikeSpeed: 18.4 },
+  { level: 3, barriers: ['60920000', '282600000000', '1.303e16'], spikeSpeed: 18.8 },
+  { level: 4, barriers: ['6.513e21', '3.799e28', '2.765e36'], spikeSpeed: 19.2 },
+  { level: 5, barriers: ['2.668e45', '3.605e55', '7.178e66'], spikeSpeed: 19.7 },
+  { level: 6, barriers: ['2.208e79', '1.097e93', '9.173e107'], spikeSpeed: 20.1 },
+  { level: 7, barriers: ['1.343e124', '3.573e141', '1.789e160'], spikeSpeed: 20.5 },
+  { level: 8, barriers: ['1.745e180', '3.422e201', '1.392e224'], spikeSpeed: 20.9 },
+  { level: 9, barriers: ['1.21e248', '2.314e273', '1e300'], spikeSpeed: 21.3 },
 ];
 
 export const FALLBACK_LEVELS = {

@@ -6,39 +6,40 @@
 #     "9.158e21"        —— 科学计数法（尾数可带小数）
 #     "1e300"           —— 10^300
 #
-# 曲线由 tools/design-levels.mjs 生成：
+# 曲线由 tools/design-levels.mjs 生成（CURVE_POWER = 2.2）：
 #   · 第 1 关 = 1 / 50 / 100（亲和的小整数）
+#   · 第 2 关刻意压得很低，小球可以一击破一道屏障 —— 缩短前期时间、减少成长空间
 #   · 第 9 关第 3 道 = 10^300（硬约束）
-#   · 中间由一条加速曲线贯通，关内倍数从 10^1.7 递增到 10^15.8
 #   · 27 道屏障【全局严格递增】，9 关是同一条成长曲线被切成 9 段
+#   · 时间分布刻意做成非线性递增：单关耗时约 3.9s → 21.7s
 #
-# 尖刺速度由 tools/calibrate.mjs 用真实物理逐帧模拟标定。
+# 尖刺速度由 tools/calibrate.mjs 用真实物理逐帧模拟、二分搜索临界速度后自动反推。
 mathball:
   levels:
     - level: 1
       barriers: ["1", "50", "100"]
       spike-speed: 18
     - level: 2
-      barriers: ["6105000", "60770000000000", "9.158e21"]
-      spike-speed: 20.5
+      barriers: ["187", "1815", "118000"]
+      spike-speed: 18.4
     - level: 3
-      barriers: ["1.035e31", "6.019e40", "1.418e51"]
-      spike-speed: 23.1
+      barriers: ["60920000", "282600000000", "1.303e16"]
+      spike-speed: 18.8
     - level: 4
-      barriers: ["1.142e62", "2.772e73", "1.836e85"]
-      spike-speed: 25.6
+      barriers: ["6.513e21", "3.799e28", "2.765e36"]
+      spike-speed: 19.2
     - level: 5
-      barriers: ["3.065e97", "1.207e110", "1.061e123"]
-      spike-speed: 28.1
+      barriers: ["2.668e45", "3.605e55", "7.178e66"]
+      spike-speed: 19.7
     - level: 6
-      barriers: ["1.984e136", "7.578e149", "5.701e163"]
-      spike-speed: 30.6
+      barriers: ["2.208e79", "1.097e93", "9.173e107"]
+      spike-speed: 20.1
     - level: 7
-      barriers: ["8.182e177", "2.177e192", "1.047e207"]
-      spike-speed: 33.2
+      barriers: ["1.343e124", "3.573e141", "1.789e160"]
+      spike-speed: 20.5
     - level: 8
-      barriers: ["8.885e221", "1.304e237", "3.243e252"]
-      spike-speed: 35.7
+      barriers: ["1.745e180", "3.422e201", "1.392e224"]
+      spike-speed: 20.9
     - level: 9
-      barriers: ["1.344e268", "9.125e283", "1e300"]
-      spike-speed: 38.2
+      barriers: ["1.21e248", "2.314e273", "1e300"]
+      spike-speed: 21.3

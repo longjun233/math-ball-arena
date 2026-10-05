@@ -18,8 +18,8 @@ const ANCHOR_LAST = [100, 200, 300];     // log10(10^100), 10^200, 10^300
 const LEVEL_COUNT = 9;
 const STEP = 1;                          // 阶乘球固定步长
 const START_N = 2;
-const BOUNCE_T = 0.494;
-const OVERHEAD = 0.49 + 2 * 0.52 + 0.49;
+const BOUNCE_T = 0.6;                    // 弹跳周期 2*v0/g（随物理参数调整）
+const OVERHEAD = 0.57 + 2 * 0.97 + 0.76; // 首次下落 + 两次穿越 + 落入安全区
 
 function log10Big(x) {
   const s = x.toString();
@@ -49,9 +49,11 @@ function toExpr(x) {
 // 点 25~27 = 第 9 关（锚点）
 const GAP = 22;                          // 点 3 → 点 25 之间的间隔数
 // 点 4~27 由一条加速曲线贯通到 10^300。
-// 第 9 关不再做特殊跳变 —— 它只是这条曲线的末端，因为数值最高所以自然最难。
+// 第 9 关不做特殊跳变 —— 它只是这条曲线的末端，因为数值最高所以自然最难。
+// CURVE_POWER 越大 = 前期血量越低（球一两击就过，成长慢、耗时短），后期越陡（耗时长），
+// 从而让 9 关的【时间分布】呈明显的递增，而不是每关都差不多。
 const TAIL_POINTS = 24;
-const CURVE_POWER = 1.3;
+const CURVE_POWER = 2.2;
 const exp = [ANCHOR_FIRST[0], ANCHOR_FIRST[1], ANCHOR_FIRST[2]];
 for (let k = 1; k <= TAIL_POINTS; k++) {
   exp.push(2 + (300 - 2) * Math.pow(k / TAIL_POINTS, CURVE_POWER));

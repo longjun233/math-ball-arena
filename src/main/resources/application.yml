@@ -25,8 +25,8 @@ mathball:
   physics:
     canvas-width: 900
     canvas-height: 760
-    gravity: 1700
-    bounce-speed: 420
+    gravity: 1000
+    bounce-speed: 300
     vx-min: 40
     vx-max: 160
     barrier-gap: 180
