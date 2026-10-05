@@ -1,0 +1,9 @@
+target/
+.m2repo/
+.idea/
+*.iml
+*.log
+.DS_Store
+node_modules/
+.vscode/
+*.class

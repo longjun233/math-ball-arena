@@ -1,0 +1,50 @@
+# 9 关数值表（唯一真值）
+#
+# 只写血量指数与尖刺速度；BigInteger 血量由 LevelService 现算，避免在 yml 里写 301 位数字。
+#
+# 血量规律：同关内相邻屏障相差 8 个数量级；第 1~7 关之间每关整体上移 1 个数量级
+#           （让阶乘球每关的撞击次数恒定在 10~12 击，从而让尖刺速度可以逐关递增）。
+# 第 8、9 关换成增长率更猛的球种，血量跨度随之放大。
+#
+# spikeSpeed 由 tools/calibrate.mjs 用真实物理逐帧模拟、二分搜索临界速度后按目标余量反推。
+# 改动任何物理参数或血量后，必须重跑：
+#     node tools/calibrate.mjs
+#     node tools/physics-selftest.mjs
+mathball:
+  levels:
+    - level: 1
+      recommended-ball: FACTORIAL
+      hp-exponent: [4, 12, 20]
+      spike-speed: 71.3
+    - level: 2
+      recommended-ball: FACTORIAL
+      hp-exponent: [5, 13, 21]
+      spike-speed: 76.7
+    - level: 3
+      recommended-ball: FACTORIAL
+      hp-exponent: [6, 14, 22]
+      spike-speed: 78.6
+    - level: 4
+      recommended-ball: FACTORIAL
+      hp-exponent: [7, 15, 23]
+      spike-speed: 82.4
+    - level: 5
+      recommended-ball: FACTORIAL
+      hp-exponent: [8, 16, 24]
+      spike-speed: 85.8
+    - level: 6
+      recommended-ball: FACTORIAL
+      hp-exponent: [9, 17, 25]
+      spike-speed: 89.9
+    - level: 7
+      recommended-ball: FACTORIAL
+      hp-exponent: [10, 18, 26]
+      spike-speed: 94.4
+    - level: 8
+      recommended-ball: TRI
+      hp-exponent: [20, 50, 80]
+      spike-speed: 99.2
+    - level: 9
+      recommended-ball: SQR
+      hp-exponent: [85, 195, 300]
+      spike-speed: 100.6

@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: math-ball-arena
+  config:
+    import: classpath:levels.yml
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 0
+
+logging:
+  level:
+    com.example.mathball: INFO
+    root: WARN
+
+mathball:
+  transition:
+    enabled: true
+    duration-ms: 600
+  physics:
+    canvas-width: 900
+    canvas-height: 760
+    gravity: 2400
+    bounce-speed: 420
+    vx-min: 40
+    vx-max: 160
+    barrier-gap: 110
+    barrier-height: 16
+    barrier-top-y: [390, 500, 610]
+    safe-zone-top: 670
+    ball-radius: 16
+    ball-start-y: 100
+    ball-start-n: 2
+    spike-height: 60
+    spike-travel: 700
+    fixed-step-sec: 0.008333333333333333
