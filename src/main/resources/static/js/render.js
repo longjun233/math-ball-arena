@@ -109,43 +109,63 @@ export function createRenderer(canvas) {
   function drawBarrier(bar, p) {
     const W = p.canvasWidth;
     const h = p.barrierHeight;
+    const radius = Math.min(h / 3, 10);
     const ratio = hpPercent(bar.hp, bar.maxHp) / 100;
     const color = barrierColor(ratio);
+    const cy = bar.top + h / 2;
 
+    // 底盘
     ctx.save();
     ctx.shadowColor = color;
-    ctx.shadowBlur = 14;
-    ctx.fillStyle = 'rgba(10, 18, 36, 0.92)';
-    roundRect(ctx, 0, bar.top, W, h, 8);
+    ctx.shadowBlur = 16;
+    ctx.fillStyle = 'rgba(8, 14, 28, 0.95)';
+    roundRect(ctx, 0, bar.top, W, h, radius);
     ctx.fill();
     ctx.restore();
 
-    // 血条
+    // 血条：按剩余血量比例填充，带上下渐变显得更厚实
     ctx.save();
-    roundRect(ctx, 0, bar.top, W, h, 8);
+    roundRect(ctx, 0, bar.top, W, h, radius);
     ctx.clip();
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.85;
+    const grad = ctx.createLinearGradient(0, bar.top, 0, bar.top + h);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.38)');
+    ctx.globalAlpha = 0.92;
+    ctx.fillStyle = grad;
     ctx.fillRect(0, bar.top, W * Math.max(0, ratio), h);
     ctx.restore();
 
     // 边框
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.globalAlpha = 0.9;
-    roundRect(ctx, 0.75, bar.top + 0.75, W - 1.5, h - 1.5, 8);
+    ctx.lineWidth = 2;
+    roundRect(ctx, 1, bar.top + 1, W - 2, h - 2, radius);
     ctx.stroke();
-    ctx.globalAlpha = 1;
 
-    // 血量数字（10 的幂形式）
+    // 血量数字：深色胶囊底衬 + 白色细体字，任何血条颜色下都清晰可读
     const label = formatHp(bar.hp > 0n ? bar.hp : 0n);
-    ctx.font = '700 14px "JetBrains Mono", Consolas, monospace';
+    const fontSize = Math.max(13, Math.min(18, Math.round(h * 0.62)));
+    ctx.font = `600 ${fontSize}px "JetBrains Mono", Consolas, monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(6, 12, 24, 0.85)';
-    ctx.fillText(label, W / 2 + 1, bar.top + h / 2 + 1);
-    ctx.fillStyle = ratio < 0.5 ? '#ffffff' : '#04121f';
-    ctx.fillText(label, W / 2, bar.top + h / 2);
+
+    const textWidth = ctx.measureText(label).width;
+    const padX = 14;
+    const pillW = textWidth + padX * 2;
+    const pillH = fontSize + 12;
+    const pillX = W / 2 - pillW / 2;
+    const pillY = cy - pillH / 2;
+
+    ctx.fillStyle = 'rgba(3, 8, 18, 0.84)';
+    roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, W / 2, cy + 0.5);
   }
 
   function drawSpikes(spike, W, height) {

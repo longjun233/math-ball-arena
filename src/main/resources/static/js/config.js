@@ -11,7 +11,7 @@ export const PHYSICS_DEFAULTS = {
   vxMin: 40,
   vxMax: 160,
   barrierGap: 180,        // 三道屏障占据屏幕大部分
-  barrierHeight: 16,
+  barrierHeight: 28,       // 屏障加厚，血量数字有足够空间显示清楚
   barrierTopY: [280, 460, 640],
   safeZoneTop: 700,
   ballRadius: 16,
