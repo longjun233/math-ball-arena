@@ -1,0 +1,50 @@
+{
+  // ── JDK ────────────────────────────────────────────────────────────────
+  // 本机 JAVA_HOME 指向 JDK 8，而本项目需要 JDK 17+，所以这里显式指定。
+  // 换机器时把下面两处 "C:\\Java" 改成你自己的 JDK 17+ 安装路径即可。
+  "java.jdt.ls.java.home": "C:\\Java",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "C:\\Java",
+      "default": true
+    }
+  ],
+
+  // ── Spring Boot ────────────────────────────────────────────────────────
+  "spring-boot.ls.java.home": "C:\\Java",
+  "spring-boot.ls.problem.application-properties.unknown-property": "WARNING",
+
+  // ── Maven ──────────────────────────────────────────────────────────────
+  // 本地仓库固定在项目内 .m2repo/（依赖已预下载，可离线构建）。
+  // 该设置同时写在 .mvn/maven.config 里，IDE 与命令行共用。
+  "java.import.maven.enabled": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "maven.executable.preferMavenWrapper": false,
+  "maven.terminal.useJavaHome": false,
+
+  // ── 编辑体验 ───────────────────────────────────────────────────────────
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.tabSize": 2,
+  "editor.rulers": [120],
+  "[java]": {
+    "editor.tabSize": 4
+  },
+
+  // ── 其他 ───────────────────────────────────────────────────────────────
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.saveActions.organizeImports": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/target": false,
+    "**/.m2repo": true
+  },
+  "search.exclude": {
+    "**/target": true,
+    "**/.m2repo": true,
+    "**/docs/shots": true
+  }
+}

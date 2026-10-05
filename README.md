@@ -24,7 +24,26 @@
 ```
 
 `mvnw.ps1` 做两件事：自动挑选一个 JDK 17+（本机 `JAVA_HOME` 可能指向 JDK 8），
-以及把 Maven 本地仓库固定到项目内的 `.m2repo/`（避免写用户目录被沙箱拒绝）。
+以及把 Maven 本地仓库固定到项目内的 `.m2repo/`。
+
+### 用 IDE 打开（无需额外配置）
+
+这已经是一个标准 Maven 工程，**依赖也已预下载在 `.m2repo/`（73MB），可以离线构建**。
+
+| IDE | 打开方式 |
+|---|---|
+| **VS Code** | `File → Open Folder` 选 `math-ball-arena`。已内置 `.vscode/`（JDK 路径、启动配置、任务、推荐扩展），装好 `vscjava.vscode-java-pack` + `vmware.vscode-boot-dev-pack` 后按 **F5** 直接调试运行 |
+| **IntelliJ IDEA** | `Open` 选 `math-ball-arena/pom.xml`，按 Maven 工程导入即可。若提示 JDK，选 17 或更高 |
+| **Eclipse** | `File → Import → Existing Maven Projects`，选工程根目录 |
+
+VS Code 里可直接用的东西：
+
+- **F5** → `运行 MathBallApplication（Spring Boot）`（`launch.json` 已配好 `JAVA_HOME`）
+- **Ctrl+Shift+P → Run Task** → `Maven: 跑测试` / `Maven: 启动服务` / `Tools: 数值与物理全套校验`
+- 换机器时只需改 `.vscode/settings.json` 里的两处 `"C:\\Java"`，指向你自己的 JDK 17+ 路径
+
+> 本地仓库位置写在 `.mvn/maven.config`（`-Dmaven.repo.local=.m2repo`），
+> 所以 IDE、`mvnw.ps1`、命令行 `mvn` 三者用的是同一个仓库，不会各拉一份。
 
 调试面板：`http://localhost:8080/?debug=1` —— 实时显示当前阶数、撞击计数、尖刺位置。
 
