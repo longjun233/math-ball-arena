@@ -14,7 +14,16 @@ export const STATUS = {
   GAME_OVER: 'GAME_OVER',
 };
 
-export function createRunState(level, ball, physics, traitCode = 'none') {
+/**
+ * 创建一关的运行时状态。
+ *
+ * @param options.startN    本关起始阶数。阶数是【跨关累加】的：
+ *                          第 1 关从 ballStartN 开始，之后每关都传上一关结束时的 n。
+ * @param options.traitCode 球种特性钩子，v1 恒为 'none'
+ */
+export function createRunState(level, ball, physics, options = {}) {
+  const { traitCode = 'none', startN = physics.ballStartN } = options;
+
   const barriers = physics.barrierTopY.map((top, i) => {
     const hp = BigInt(level.barrierHp[i]);
     return { index: i, top, hp, maxHp: hp, alive: true };
@@ -29,7 +38,7 @@ export function createRunState(level, ball, physics, traitCode = 'none') {
       y: physics.ballStartY,
       vx: 0,
       vy: 0,
-      n: physics.ballStartN,
+      n: startN,
       step: ball.step,
       ballCode: ball.code,
       radius: physics.ballRadius,

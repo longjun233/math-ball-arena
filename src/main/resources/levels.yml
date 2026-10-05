@@ -1,50 +1,52 @@
 # 9 关数值表（唯一真值）
 #
-# 只写血量指数与尖刺速度；BigInteger 血量由 LevelService 现算，避免在 yml 里写 301 位数字。
+# 只写血量指数与尖刺速度；BigInteger 血量由 LevelService 现算。
 #
-# 血量规律：同关内相邻屏障相差 8 个数量级；第 1~7 关之间每关整体上移 1 个数量级
-#           （让阶乘球每关的撞击次数恒定在 10~12 击，从而让尖刺速度可以逐关递增）。
-# 第 8、9 关换成增长率更猛的球种，血量跨度随之放大。
+# 血量曲线由 tools/design-levels.mjs 生成：
+#   1. 小球阶数【跨关累加】，第 N 关从上一关结束时的 n 继续，不重置
+#   2. 27 道屏障的血量指数【全局严格递增】，9 关是同一条成长曲线被切成 9 段
+#   3. 第 27 道（第 9 关第 3 道）锁定 10^300
 #
-# spikeSpeed 由 tools/calibrate.mjs 用真实物理逐帧模拟、二分搜索临界速度后按目标余量反推。
+# 尖刺速度由 tools/calibrate.mjs 用真实物理逐帧模拟、二分搜索临界速度后反推。
 # 改动任何物理参数或血量后，必须重跑：
+#     node tools/design-levels.mjs
 #     node tools/calibrate.mjs
 #     node tools/physics-selftest.mjs
 mathball:
   levels:
     - level: 1
       recommended-ball: FACTORIAL
-      hp-exponent: [4, 12, 20]
-      spike-speed: 71.3
+      hp-exponent: [4, 10, 18]
+      spike-speed: 52
     - level: 2
       recommended-ball: FACTORIAL
-      hp-exponent: [5, 13, 21]
-      spike-speed: 76.7
+      hp-exponent: [27, 36, 45]
+      spike-speed: 55
     - level: 3
       recommended-ball: FACTORIAL
-      hp-exponent: [6, 14, 22]
-      spike-speed: 78.6
+      hp-exponent: [55, 66, 76]
+      spike-speed: 58
     - level: 4
       recommended-ball: FACTORIAL
-      hp-exponent: [7, 15, 23]
-      spike-speed: 82.4
+      hp-exponent: [87, 98, 110]
+      spike-speed: 61
     - level: 5
       recommended-ball: FACTORIAL
-      hp-exponent: [8, 16, 24]
-      spike-speed: 85.8
+      hp-exponent: [121, 133, 145]
+      spike-speed: 64
     - level: 6
       recommended-ball: FACTORIAL
-      hp-exponent: [9, 17, 25]
-      spike-speed: 89.9
+      hp-exponent: [157, 170, 182]
+      spike-speed: 67
     - level: 7
       recommended-ball: FACTORIAL
-      hp-exponent: [10, 18, 26]
-      spike-speed: 94.4
+      hp-exponent: [195, 207, 220]
+      spike-speed: 70
     - level: 8
-      recommended-ball: TRI
-      hp-exponent: [20, 50, 80]
-      spike-speed: 99.2
+      recommended-ball: FACTORIAL
+      hp-exponent: [233, 247, 260]
+      spike-speed: 76
     - level: 9
-      recommended-ball: SQR
-      hp-exponent: [85, 195, 300]
-      spike-speed: 100.6
+      recommended-ball: FACTORIAL
+      hp-exponent: [273, 287, 300]
+      spike-speed: 82

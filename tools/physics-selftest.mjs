@@ -1,8 +1,11 @@
-// 前端物理内核自测：用真实 physics.js 模拟 9 关 × 3 球，验证门槛矩阵。
+// 前端物理内核自测（跨关累加版）
 //
-// 关键：这里的"限时"不是固定秒数，而是尖刺落到小球所在位置的时刻，
-// 因此它取决于小球当时的高度。balance-calc.mjs 用的是均匀行程近似，
-// 本脚本做的是逐帧真实模拟，两者必须一致，不一致以本脚本为准。
+// 用真实 physics.js 从第 1 关连续跑到第 9 关，验证：
+//   1. 物理不变量（弹跳高度、屏障间距、屏障数量）
+//   2. 27 道屏障血量【全局严格递增】，终点 10^300
+//   3. 小球阶数【跨关累加】，不重置
+//   4. 三种公式球都能通关，且阶乘球（最弱）耗时最长
+//   5. 整局时长 ≤ 2 分钟
 //
 // 运行：node tools/physics-selftest.mjs
 
@@ -20,92 +23,106 @@ const LEVELS = LEVEL_SPECS.map((s) => ({
   recommendedBall: s.recommendedBall,
   barrierHp: s.hpExponent.map((e) => '1' + '0'.repeat(e)),
   spike: { speed: s.spikeSpeed, travel: PHYSICS_DEFAULTS.spikeTravel },
-  timeLimitSec: PHYSICS_DEFAULTS.spikeTravel / s.spikeSpeed,
 }));
 
-function simulate(level, ballCode) {
-  const state = createRunState(level, BALLS[ballCode], PHYSICS_DEFAULTS);
-  const dt = PHYSICS_DEFAULTS.fixedStepSec;
-  let guard = 0;
-  const maxSteps = 2_000_000;
-  while (state.status === STATUS.RUNNING && guard++ < maxSteps) {
-    stepPhysics(state, dt, null);
+const MAX_STEPS = 4_000_000;
+const DT = PHYSICS_DEFAULTS.fixedStepSec;
+
+function runOne(level, ballCode, startN) {
+  const state = createRunState(level, BALLS[ballCode], PHYSICS_DEFAULTS, { startN });
+  let steps = 0;
+  while (state.status === STATUS.RUNNING && steps++ < MAX_STEPS) {
+    stepPhysics(state, DT, null);
   }
-  const destroyed = state.barriers.filter((b) => !b.alive).length;
   return {
     cleared: state.status === STATUS.LEVEL_CLEAR,
-    hits: state.totalHits ?? state.hits,
     elapsed: state.elapsed,
-    destroyed,
-    finalN: state.ball.n,
-    spikeY: state.spike.y,
-    timedOut: guard >= maxSteps,
+    hits: state.hits,
+    startN,
+    endN: state.ball.n,
   };
 }
 
-console.log('=== 物理不变量校验 ===');
-const problems = validatePhysics(PHYSICS_DEFAULTS);
-if (problems.length === 0) {
-  console.log('✅ 物理常量全部通过');
-} else {
-  for (const p of problems) console.log('❌ ' + p);
-}
-const h = (PHYSICS_DEFAULTS.bounceSpeed ** 2) / (2 * PHYSICS_DEFAULTS.gravity);
-console.log(`   弹跳高度 ${h.toFixed(2)}px   弹跳周期 ${((2 * PHYSICS_DEFAULTS.bounceSpeed) / PHYSICS_DEFAULTS.gravity).toFixed(3)}s`);
-console.log('');
-
-console.log('=== 逐关真实模拟 ===');
-console.log(['关卡', '尖刺', '阶乘球(+2)', '三角阶乘球(+1)', '正方阶乘球(+1)'].join('\t'));
-const results = [];
-for (const level of LEVELS) {
-  const row = { level: level.level, cells: {} };
-  const cells = [`第${level.level}关`, `${level.spike.speed}px/s`];
-  for (const code of ['FACTORIAL', 'TRI', 'SQR']) {
-    const r = simulate(level, code);
-    row.cells[code] = r;
-    const label = r.timedOut
-      ? '∞'
-      : `${r.hits}击/${r.elapsed.toFixed(2)}s ${r.cleared ? '✅' : '❌'}`;
-    cells.push(label);
+function runFull(ballCode) {
+  let n = PHYSICS_DEFAULTS.ballStartN;
+  const per = [];
+  let total = 0;
+  let failedAt = null;
+  for (const lv of LEVELS) {
+    const r = runOne(lv, ballCode, n);
+    per.push(r);
+    total += r.elapsed;
+    if (!r.cleared) { failedAt = lv.level; break; }
+    n = r.endN;
   }
-  results.push(row);
-  console.log(cells.join('\t'));
+  return { per, total, failedAt, finalN: n };
 }
 
-console.log('');
-console.log('=== 难度曲线 ===');
-console.log('推荐球通关耗时：' + results
-  .map((r) => {
-    const rec = LEVELS.find((l) => l.level === r.level).recommendedBall;
-    return r.cells[rec].elapsed.toFixed(2);
-  })
-  .join(' → '));
-
-console.log('');
-console.log('=== 门槛断言 ===');
 let pass = 0;
 let fail = 0;
-const chk = (label, cond) => {
+const chk = (label, cond, extra = '') => {
   cond ? pass++ : fail++;
-  console.log(`${cond ? '✅' : '❌'} ${label}`);
+  console.log(`${cond ? '✅' : '❌'} ${label}${extra ? '  ' + extra : ''}`);
 };
-const at = (lv, code) => results.find((r) => r.level === lv).cells[code];
 
-for (let lv = 1; lv <= 7; lv++) {
-  chk(`阶乘球可通关第 ${lv} 关（${at(lv, 'FACTORIAL').hits}击/${at(lv, 'FACTORIAL').elapsed.toFixed(2)}s）`,
-    at(lv, 'FACTORIAL').cleared);
-}
-chk('阶乘球无法通关第 8 关', !at(8, 'FACTORIAL').cleared);
-chk('阶乘球无法通关第 9 关', !at(9, 'FACTORIAL').cleared);
-chk('三角阶乘球可通关第 8 关', at(8, 'TRI').cleared);
-chk('三角阶乘球无法通关第 9 关', !at(9, 'TRI').cleared);
-chk('正方阶乘球可通关第 9 关', at(9, 'SQR').cleared);
+// ---------- 1. 物理不变量 ----------
+console.log('=== 物理不变量 ===');
+const problems = validatePhysics(PHYSICS_DEFAULTS);
+for (const p of problems) console.log('❌ ' + p);
+chk('物理常量全部通过', problems.length === 0);
+const h = (PHYSICS_DEFAULTS.bounceSpeed ** 2) / (2 * PHYSICS_DEFAULTS.gravity);
+const T = (2 * PHYSICS_DEFAULTS.bounceSpeed) / PHYSICS_DEFAULTS.gravity;
+console.log(`   弹跳高度 ${h.toFixed(2)}px   弹跳周期 ${T.toFixed(3)}s`);
+console.log('');
 
-let totalClear = 0;
-for (let lv = 1; lv <= 9; lv++) {
-  if (at(lv, 'SQR').cleared) totalClear++;
+// ---------- 2. 血量全局严格递增 ----------
+console.log('=== 血量曲线 ===');
+const hpAll = [];
+for (const lv of LEVELS) for (const hp of lv.barrierHp) hpAll.push(BigInt(hp));
+chk('27 道屏障血量全局严格递增', hpAll.every((v, i) => i === 0 || v > hpAll[i - 1]));
+chk('终点为 10^300', hpAll[26] === 10n ** 300n, `10^${hpAll[26].toString().length - 1}`);
+for (const lv of LEVELS) {
+  const seg = lv.barrierHp.map((x) => '10^' + (x.length - 1)).join(' / ');
+  console.log(`   第${lv.level}关  ${seg}   尖刺 ${lv.spike.speed}px/s`);
 }
-chk('正方阶乘球可通关全部 9 关', totalClear === 9);
+console.log('');
+
+// ---------- 3. 三种球连续通关 ----------
+console.log('=== 连续 9 关真机模拟 ===');
+const runs = {};
+for (const code of ['FACTORIAL', 'TRI', 'SQR']) {
+  const r = runFull(code);
+  runs[code] = r;
+  const label = r.failedAt ? `第 ${r.failedAt} 关失败` : '全部通关';
+  console.log(`${BALLS[code].name.padEnd(6)} ${label.padEnd(10)} 累计 ${r.total.toFixed(1)}s  终球 n=${r.finalN}`);
+  console.log('   ' + r.per.map((p, i) => `L${i + 1}:${p.hits}击/${p.elapsed.toFixed(2)}s`).join('  '));
+}
+console.log('');
+
+// ---------- 4. 断言 ----------
+console.log('=== 断言 ===');
+chk('阶乘球可通关全部 9 关', runs.FACTORIAL.failedAt === null);
+chk('三角阶乘球可通关全部 9 关', runs.TRI.failedAt === null);
+chk('正方阶乘球可通关全部 9 关', runs.SQR.failedAt === null);
+chk('阶乘球是最慢的球种（体现其最弱）',
+  runs.FACTORIAL.total > runs.TRI.total && runs.FACTORIAL.total > runs.SQR.total,
+  `${runs.FACTORIAL.total.toFixed(1)}s > ${runs.TRI.total.toFixed(1)}s / ${runs.SQR.total.toFixed(1)}s`);
+chk('三种球整局时长均 ≤ 2 分钟',
+  [runs.FACTORIAL, runs.TRI, runs.SQR].every((r) => r.total <= 120));
+
+// 阶数跨关累加：每关起始 n 必须等于上一关结束 n
+const per = runs.FACTORIAL.per;
+let monotonic = true;
+for (let i = 1; i < per.length; i++) {
+  if (per[i].startN !== per[i - 1].endN) monotonic = false;
+}
+chk('小球阶数跨关累加且连续（不重置）', monotonic,
+  `n: ${per.map((p) => p.startN).join(' → ')} → ${per[per.length - 1].endN}`);
+chk('阶数严格递增', per.every((p, i) => i === 0 || p.endN > p.startN));
+
+// 尖刺速度单调
+const speeds = LEVELS.map((l) => l.spike.speed);
+chk('尖刺速度逐关递增', speeds.every((s, i) => i === 0 || s > speeds[i - 1]), speeds.join(' → '));
 
 console.log(`\n通过 ${pass} 条，失败 ${fail} 条`);
 process.exit(fail === 0 ? 0 : 1);

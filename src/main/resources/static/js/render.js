@@ -19,7 +19,21 @@ export function barrierColor(ratio) {
   return '#ff4d5e';
 }
 
-export function ballLabel(ball) {
+/**
+ * 小球上显示的公式文本：**固定不变**，只显示公式符号本身。
+ * 阶数 n 不体现在球面上，避免数值变长撑破球体 UI。
+ */
+export function ballFormulaText(ballCode) {
+  switch (ballCode) {
+    case 'FACTORIAL': return 'n!';
+    case 'TRI': return 'T(n)!';
+    case 'SQR': return '(n²)!';
+    default: return 'n!';
+  }
+}
+
+/** 具体阶数文本，只用于 HUD 与结算界面，不画在球上。 */
+export function ballDegreeText(ball) {
   switch (ball.ballCode) {
     case 'FACTORIAL': return `${ball.n}!`;
     case 'TRI': return `T(${ball.n})!`;
@@ -198,16 +212,16 @@ export function createRenderer(canvas) {
     }
     ctx.restore();
 
-    // 公式：常态只显示公式本身，不显示算出来的数值
-    const label = ballLabel(ball);
-    const fontSize = Math.max(9, Math.min(17, 84 / label.length));
+    // 公式：只显示公式符号本身，文本固定不变，永远不会随阶数变长而溢出
+    const label = ballFormulaText(ball.ballCode);
+    const fontSize = label.length <= 2 ? 15 : (label.length <= 5 ? 11 : 9);
     ctx.font = `800 ${fontSize}px "JetBrains Mono", Consolas, monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = 'rgba(4, 14, 26, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(4, 14, 26, 0.5)';
     ctx.strokeText(label, ball.x, ball.y);
-    ctx.fillStyle = '#04222e';
+    ctx.fillStyle = '#052a38';
     ctx.fillText(label, ball.x, ball.y);
   }
 
@@ -252,6 +266,21 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = 1;
   }
 
+  /** 关卡无缝切换时的画面闪现，不阻塞物理。 */
+  function drawBanner(banner) {
+    if (!banner || banner.alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = banner.alpha * 0.9;
+    ctx.font = '800 46px "JetBrains Mono", Consolas, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(124, 245, 255, 0.7)';
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = '#cdf6ff';
+    ctx.fillText(banner.text, logicalWidth / 2, logicalHeight * 0.42);
+    ctx.restore();
+  }
+
   function draw(state, fx, now, opts = {}) {
     if (!state) {
       drawBackground(logicalWidth, logicalHeight, now);
@@ -275,6 +304,7 @@ export function createRenderer(canvas) {
     if (!opts.hideBall) drawBall(state.ball, opts.pulse || 0);
     drawParticles(fx);
     drawTexts(fx);
+    if (opts.banner) drawBanner(opts.banner);
 
     ctx.restore();
   }

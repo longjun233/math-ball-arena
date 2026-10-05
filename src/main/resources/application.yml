@@ -8,7 +8,8 @@ spring:
     import: classpath:levels.yml
   web:
     resources:
-      static-locations: classpath:/static/
+      # classpath 优先（打包后可用），file 兜底（开发时改前端无需重启）
+      static-locations: classpath:/static/,file:./src/main/resources/static/
       cache:
         period: 0
 
@@ -20,11 +21,11 @@ logging:
 mathball:
   transition:
     enabled: true
-    duration-ms: 600
+    banner-ms: 800
   physics:
     canvas-width: 900
     canvas-height: 760
-    gravity: 2400
+    gravity: 1700
     bounce-speed: 420
     vx-min: 40
     vx-max: 160

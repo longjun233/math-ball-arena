@@ -59,9 +59,10 @@ export function createUi({ totalLevels }) {
     setTimeout(() => intro.classList.add('hidden'), 200);
   }
 
-  function updateHud({ level, ballName, step, spikeProgress, offline }) {
+  function updateHud({ level, ballName, step, degree, spikeProgress, offline }) {
     $('hud-level').textContent = `LEVEL ${level} / ${totalLevels}`;
-    $('hud-ball').textContent = `${ballName} · 每击 +${step} 阶`;
+    const degreeText = Number.isFinite(degree) ? ` · n = ${degree}` : '';
+    $('hud-ball').textContent = `${ballName} · 每击 +${step} 阶${degreeText}`;
     $('hud-progress').style.width = `${Math.round(Math.min(1, Math.max(0, spikeProgress)) * 100)}%`;
     $('hud-offline').classList.toggle('hidden', !offline);
   }

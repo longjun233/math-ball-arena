@@ -4,7 +4,7 @@
 export const PHYSICS_DEFAULTS = {
   canvasWidth: 900,
   canvasHeight: 760,
-  gravity: 2400,
+  gravity: 1700,          // 放慢节奏：弹跳周期 2*v0/g ≈ 0.494s（原 2400 → 0.35s 偏快）
   bounceSpeed: 420,
   vxMin: 40,
   vxMax: 160,
@@ -20,7 +20,8 @@ export const PHYSICS_DEFAULTS = {
   fixedStepSec: 1 / 120,
 };
 
-export const TRANSITION_DEFAULTS = { enabled: true, durationMs: 600 };
+// 关卡之间无缝衔接：不停顿、不弹结算界面，只闪一下关卡号
+export const TRANSITION_DEFAULTS = { enabled: true, bannerMs: 800 };
 
 export const BALL_DEFAULTS = [
   { code: 'FACTORIAL', name: '阶乘球', formula: 'n!', step: 2, stars: 1, unlocked: true },
@@ -29,18 +30,20 @@ export const BALL_DEFAULTS = [
 ];
 
 // 关卡数值真值（与 src/main/resources/levels.yml 一致）
-// 血量指数规律：同关内相邻屏障相差 8 个数量级；第 1~7 关之间每关整体上移 1 个数量级
-// （让阶乘球每关的撞击次数基本恒定 10~12 击，从而让尖刺速度可以逐关递增）。
+//
+// 血量曲线由 tools/design-levels.mjs 生成：以阶乘球每 3 击推进一道屏障为节奏基准，
+// 27 道屏障的血量指数【全局严格递增】，终点锁定 10^300。
+// 9 关本质是同一条成长曲线被切成 9 段，不允许出现关卡间倒挂。
 export const LEVEL_SPECS = [
-  { level: 1, recommendedBall: 'FACTORIAL', hpExponent: [4, 12, 20], spikeSpeed: 71.3 },
-  { level: 2, recommendedBall: 'FACTORIAL', hpExponent: [5, 13, 21], spikeSpeed: 76.7 },
-  { level: 3, recommendedBall: 'FACTORIAL', hpExponent: [6, 14, 22], spikeSpeed: 78.6 },
-  { level: 4, recommendedBall: 'FACTORIAL', hpExponent: [7, 15, 23], spikeSpeed: 82.4 },
-  { level: 5, recommendedBall: 'FACTORIAL', hpExponent: [8, 16, 24], spikeSpeed: 85.8 },
-  { level: 6, recommendedBall: 'FACTORIAL', hpExponent: [9, 17, 25], spikeSpeed: 89.9 },
-  { level: 7, recommendedBall: 'FACTORIAL', hpExponent: [10, 18, 26], spikeSpeed: 94.4 },
-  { level: 8, recommendedBall: 'TRI', hpExponent: [20, 50, 80], spikeSpeed: 99.2 },
-  { level: 9, recommendedBall: 'SQR', hpExponent: [85, 195, 300], spikeSpeed: 100.6 },
+  { level: 1, recommendedBall: 'FACTORIAL', hpExponent: [4, 10, 18], spikeSpeed: 52 },
+  { level: 2, recommendedBall: 'FACTORIAL', hpExponent: [27, 36, 45], spikeSpeed: 55 },
+  { level: 3, recommendedBall: 'FACTORIAL', hpExponent: [55, 66, 76], spikeSpeed: 58 },
+  { level: 4, recommendedBall: 'FACTORIAL', hpExponent: [87, 98, 110], spikeSpeed: 61 },
+  { level: 5, recommendedBall: 'FACTORIAL', hpExponent: [121, 133, 145], spikeSpeed: 64 },
+  { level: 6, recommendedBall: 'FACTORIAL', hpExponent: [157, 170, 182], spikeSpeed: 67 },
+  { level: 7, recommendedBall: 'FACTORIAL', hpExponent: [195, 207, 220], spikeSpeed: 70 },
+  { level: 8, recommendedBall: 'FACTORIAL', hpExponent: [233, 247, 260], spikeSpeed: 76 },
+  { level: 9, recommendedBall: 'FACTORIAL', hpExponent: [273, 287, 300], spikeSpeed: 82 },
 ];
 
 const pow10Str = (e) => '1' + '0'.repeat(e);

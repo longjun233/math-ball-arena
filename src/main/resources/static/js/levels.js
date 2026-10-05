@@ -1,9 +1,12 @@
 // 状态机与关卡推进。
-// 关键约束：过关绝不弹结算界面，只走 0.6s 关卡号过场，然后小球回到顶部重新下落。
+//
+// 两条关键约束：
+//   1. 【无缝】过关不弹结算界面、不暂停：小球落入安全区的下一帧就直接进入下一关。
+//      9 关本质是同一条成长曲线被切成 9 段。
+//   2. 【跨关累加】小球阶数不重置，必须由调用方把上一关结束时的 n 传给下一关。
 
 export const PHASE = {
   HOME: 'HOME',
-  INTRO: 'INTRO',
   RUNNING: 'RUNNING',
   ALL_CLEAR: 'ALL_CLEAR',
   GAME_OVER: 'GAME_OVER',
@@ -13,9 +16,8 @@ export function createFlow({ levels, transition }) {
   const state = {
     phase: PHASE.HOME,
     levelIndex: 0,
-    introRemaining: 0,
-    run: null,
     stats: null,
+    bannerMs: transition?.bannerMs ?? 800,
   };
 
   function resetStats(ball) {
@@ -42,26 +44,12 @@ export function createFlow({ levels, transition }) {
     return levels[state.levelIndex];
   }
 
-  /** 进入关卡过场。返回该关配置。 */
+  /** 进入当前关：立刻开跑，不停顿。 */
   function enterLevel() {
     const level = currentLevel();
-    state.phase = PHASE.INTRO;
-    state.introRemaining = transition.enabled ? transition.durationMs / 1000 : 0;
+    state.phase = PHASE.RUNNING;
     if (state.stats) state.stats.reachedLevel = level.level;
-    if (state.phase === PHASE.INTRO && state.introRemaining <= 0) {
-      state.phase = PHASE.RUNNING;
-    }
-    return level;
-  }
-
-  function tickIntro(dt) {
-    if (state.phase !== PHASE.INTRO) return false;
-    state.introRemaining -= dt;
-    if (state.introRemaining <= 0) {
-      state.phase = PHASE.RUNNING;
-      return true; // 过场结束
-    }
-    return false;
+    return { level, bannerMs: state.bannerMs };
   }
 
   function absorb(runState) {
@@ -92,8 +80,7 @@ export function createFlow({ levels, transition }) {
 
   function backHome() {
     state.phase = PHASE.HOME;
-    state.run = null;
   }
 
-  return { state, startRun, enterLevel, tickIntro, gameOver, levelClear, backHome, currentLevel };
+  return { state, startRun, enterLevel, gameOver, levelClear, backHome, currentLevel };
 }

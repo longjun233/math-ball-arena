@@ -96,15 +96,15 @@ public class MathBallProperties {
         public void setFixedStepSec(double fixedStepSec) { this.fixedStepSec = fixedStepSec; }
     }
 
-    /** 关卡间过场：0.6s 关卡号闪现，不是结算界面。 */
+    /** 关卡之间无缝衔接：不暂停、不弹结算界面，只在画面上闪一下关卡号。 */
     public static class Transition {
         private boolean enabled = true;
-        private int durationMs = 600;
+        private int bannerMs = 800;
 
         public boolean isEnabled() { return enabled; }
         public void setEnabled(boolean enabled) { this.enabled = enabled; }
-        public int getDurationMs() { return durationMs; }
-        public void setDurationMs(int durationMs) { this.durationMs = durationMs; }
+        public int getBannerMs() { return bannerMs; }
+        public void setBannerMs(int bannerMs) { this.bannerMs = bannerMs; }
     }
 
     /** 单关配置：只写血量指数与尖刺速度，BigInteger 血量由 LevelService 现算。 */
