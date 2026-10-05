@@ -29,10 +29,10 @@ mathball:
     bounce-speed: 420
     vx-min: 40
     vx-max: 160
-    barrier-gap: 110
+    barrier-gap: 180
     barrier-height: 16
-    barrier-top-y: [390, 500, 610]
-    safe-zone-top: 670
+    barrier-top-y: [280, 460, 640]
+    safe-zone-top: 700
     ball-radius: 16
     ball-start-y: 100
     ball-start-n: 2

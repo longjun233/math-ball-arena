@@ -1,27 +1,25 @@
-// 关卡血量设计器
+// 关卡血量设计器 v3
 //
-// 设计前提（本版变更）：
-//   1. 小球阶数跨关累加，第 N 关从上一关结束时的 n 继续，不重置
-//   2. 9 关是一条连续成长曲线被切成 9 段，27 道屏障的血量指数必须【全局严格递增】
-//      不允许出现「第 8 关第 3 道 10^150 而第 9 关第 1 道 10^100」这种倒挂
-//   3. 第 27 道（第 9 关第 3 道）屏障锁定 10^300
-//   4. 每关 3 道屏障，血量均为 10 的整数次幂
+// 血量结构（本版需求）：
+//   · 第 1 关 = 1 / 50 / 100                    （亲和的小整数，锚点）
+//   · 第 9 关 = 10^100 / 10^200 / 10^300        （关内相邻屏障相差 100 个数量级，锚点）
+//   · 第 2~8 关：在 (10^2, 10^100) 区间内按【加速】曲线插值，
+//     让「血量增长速度」跟得上阶乘球的加速增长，从而每关击数大致均匀
+//   · 27 道屏障【全局严格递增】—— 后一关第 1 道必须高于前一关第 3 道，不允许倒挂
 //
-// 方法：以阶乘球（每击 +2，n 从 2 起）为节奏基准，每 3 击推进一道屏障，
-//       取该段累积伤害的量级作为该道屏障的血量指数，再强制全局严格递增，
-//       最后把终点对齐到 10^300。
+// 所有数值都在这里实时算出，不写死；输出可直接粘进 levels.yml。
 //
 // 运行：node tools/design-levels.mjs
 
 import { factorial } from '../src/main/resources/static/js/formula.js';
 
+const ANCHOR_FIRST = [0, 1.7, 2];        // log10(1), log10(50), log10(100)
+const ANCHOR_LAST = [100, 200, 300];     // log10(10^100), 10^200, 10^300
+const LEVEL_COUNT = 9;
+const STEP = 1;                          // 阶乘球固定步长
 const START_N = 2;
-const STEP = 2;              // 阶乘球固定步长
-const HITS_PER_BARRIER = 3;  // 节奏基准：每 3 击破一道屏障
-const LEVELS = 9;
-const BARRIERS_PER_LEVEL = 3;
-const TOTAL_BARRIERS = LEVELS * BARRIERS_PER_LEVEL; // 27
-const FINAL_EXPONENT = 300;
+const BOUNCE_T = 0.494;
+const OVERHEAD = 0.49 + 2 * 0.52 + 0.49;
 
 function log10Big(x) {
   const s = x.toString();
@@ -29,64 +27,97 @@ function log10Big(x) {
   return (s.length - 1) + Math.log10(Number(s.slice(0, 16)) / 1e15);
 }
 
-// ---------- 1. 按节奏基准求出每道屏障的理想量级 ----------
-let n = START_N;
-const raw = [];
-for (let i = 0; i < TOTAL_BARRIERS; i++) {
-  let segment = 0n;
-  for (let h = 0; h < HITS_PER_BARRIER; h++) {
-    n += STEP;
-    segment += factorial(n);
-  }
-  raw.push({ barrier: i + 1, n, log: log10Big(segment) });
+/** 由 log10 值实时还原 BigInteger（保留 3 位有效小数） */
+function fromLog10(e) {
+  const intPart = Math.floor(e);
+  const frac = e - intPart;
+  const mantissa = BigInt(Math.round(Math.pow(10, frac) * 1000));
+  return (mantissa * 10n ** BigInt(intPart)) / 1000n;
 }
 
-console.log('=== 节奏基准（阶乘球每 3 击一道屏障）===');
-console.log(raw.map((r) => `#${r.barrier}:${r.log.toFixed(1)}`).join('  '));
+function toExpr(x) {
+  const s = x.toString();
+  if (s.length <= 15) return s;
+  const e = s.length - 1;
+  const mant = Number(s.slice(0, 4)) / 1000;
+  return `${mant.toFixed(3).replace(/\.?0+$/, '')}e${e}`;
+}
+
+// ---------- 1. 生成 27 个指数 ----------
+// 点 1~3   = 第 1 关（锚点）
+// 点 4~24  = 第 2~8 关（21 个点，加速插值）
+// 点 25~27 = 第 9 关（锚点）
+const GAP = 22;                          // 点 3 → 点 25 之间的间隔数
+// 点 4~27 由一条加速曲线贯通到 10^300。
+// 第 9 关不再做特殊跳变 —— 它只是这条曲线的末端，因为数值最高所以自然最难。
+const TAIL_POINTS = 24;
+const CURVE_POWER = 1.3;
+const exp = [ANCHOR_FIRST[0], ANCHOR_FIRST[1], ANCHOR_FIRST[2]];
+for (let k = 1; k <= TAIL_POINTS; k++) {
+  exp.push(2 + (300 - 2) * Math.pow(k / TAIL_POINTS, CURVE_POWER));
+}
+
+if (exp.length !== LEVEL_COUNT * 3) {
+  throw new Error(`指数数量应为 27，实际 ${exp.length}`);
+}
+
+const hp = exp.map(fromLog10);
+
+// ---------- 2. 校验 ----------
+const flat = hp;
+const strictlyIncreasing = flat.every((v, i) => i === 0 || v > flat[i - 1]);
+const anchorOk = flat[0] === 1n && flat[1] === 50n && flat[2] === 100n && flat[26] === 10n ** 300n;
+
+console.log('=== 27 道屏障血量（实时算出）===');
+console.log('关卡    屏障1          屏障2          屏障3          | 关内倍数');
+for (let L = 0; L < LEVEL_COUNT; L++) {
+  const [a, b, c] = [flat[L * 3], flat[L * 3 + 1], flat[L * 3 + 2]];
+  const r1 = log10Big(b) - log10Big(a);
+  const r2 = log10Big(c) - log10Big(b);
+  console.log(
+    `第${L + 1}关   ${toExpr(a).padEnd(14)} ${toExpr(b).padEnd(14)} ${toExpr(c).padEnd(14)} | 10^${r1.toFixed(1)} / 10^${r2.toFixed(1)}`
+  );
+}
+console.log('');
+console.log('全局严格递增：' + (strictlyIncreasing ? '✅' : '❌'));
+console.log('锚点：' + (anchorOk ? '✅ 第1关 1/50/100，第9关第3道 10^300' : '❌'));
 console.log('');
 
-// ---------- 2. 取整并强制全局严格递增 ----------
-const exps = [];
-let prev = -1;
-for (const r of raw) {
-  let e = Math.floor(r.log);
-  if (e <= prev) e = prev + 1;
-  exps.push(e);
-  prev = e;
-}
-
-// ---------- 3. 把终点对齐到 10^300，并从后往前平滑低指数 ----------
-// 终点固定，前面的指数在「节奏基准」与「终点」之间做保序拉伸
-const last = exps.length - 1;
-if (exps[last] !== FINAL_EXPONENT) {
-  const scale = FINAL_EXPONENT / exps[last];
-  for (let i = 0; i <= last; i++) {
-    exps[i] = Math.max(i === 0 ? 1 : exps[i - 1] + 1, Math.round(exps[i] * scale));
+// ---------- 3. 模拟阶乘球连续 9 关 ----------
+let n = BigInt(START_N);
+let cumHits = 0;
+let cumTime = 0;
+console.log('=== 阶乘球（每击 +1）连续 9 关 ===');
+console.log('关卡   每道屏障击数          本关   累计   结束 n   本关耗时');
+for (let L = 0; L < LEVEL_COUNT; L++) {
+  let hits = 0;
+  const per = [];
+  for (let i = 0; i < 3; i++) {
+    const target = flat[L * 3 + i];
+    let acc = 0n;
+    let h = 0;
+    while (acc < target && h < 5000) {
+      n += BigInt(STEP);
+      acc += factorial(Number(n));
+      h += 1;
+      hits += 1;
+    }
+    per.push(h);
   }
-  exps[last] = FINAL_EXPONENT;
-  // 再次保证严格递增（缩放可能造成尾部相等）
-  for (let i = last - 1; i >= 0; i--) {
-    if (exps[i] >= exps[i + 1]) exps[i] = exps[i + 1] - 1;
-  }
-  for (let i = 1; i <= last; i++) {
-    if (exps[i] <= exps[i - 1]) exps[i] = exps[i - 1] + 1;
-  }
-  exps[last] = FINAL_EXPONENT;
+  cumHits += hits;
+  const time = hits * BOUNCE_T + OVERHEAD;
+  cumTime += time;
+  console.log(
+    `第${L + 1}关   [${per.join(', ').padEnd(16)}]  ${String(hits).padStart(3)} 击  ${String(cumHits).padStart(3)}   n=${String(n).padStart(3)}   ${time.toFixed(2)}s`
+  );
 }
-
-console.log('=== 27 道屏障血量指数（全局严格递增）===');
-for (let lv = 0; lv < LEVELS; lv++) {
-  const seg = exps.slice(lv * 3, lv * 3 + 3);
-  console.log(`第${lv + 1}关: 10^${seg[0]} / 10^${seg[1]} / 10^${seg[2]}`);
-}
-console.log('');
-console.log('严格递增检查：' + (exps.every((e, i) => i === 0 || e > exps[i - 1]) ? '✅' : '❌'));
-console.log('终点检查：' + (exps[26] === 300 ? '✅ 10^300' : `❌ 10^${exps[26]}`));
+console.log(`\n总计 ${cumHits} 击，整局约 ${cumTime.toFixed(1)}s（含关间衔接）`);
 console.log('');
 
-// ---------- 4. 输出可直接粘贴的配置 ----------
-console.log('=== levels.yml / config.js 的 hpExponent ===');
-for (let lv = 0; lv < LEVELS; lv++) {
-  const seg = exps.slice(lv * 3, lv * 3 + 3);
-  console.log(`  { level: ${lv + 1}, hpExponent: [${seg.join(', ')}] },`);
+// ---------- 4. 输出配置 ----------
+console.log('=== 可直接粘进 levels.yml ===');
+for (let L = 0; L < LEVEL_COUNT; L++) {
+  const vals = [flat[L * 3], flat[L * 3 + 1], flat[L * 3 + 2]].map(toExpr);
+  console.log(`    - level: ${L + 1}`);
+  console.log(`      barriers: ["${vals[0]}", "${vals[1]}", "${vals[2]}"]`);
 }

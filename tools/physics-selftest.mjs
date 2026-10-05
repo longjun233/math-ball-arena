@@ -11,6 +11,7 @@
 
 import { createRunState, stepPhysics, STATUS, validatePhysics } from '../src/main/resources/static/js/physics.js';
 import { PHYSICS_DEFAULTS, LEVEL_SPECS, BALL_DEFAULTS } from '../src/main/resources/static/js/config.js';
+import { parseBigIntExpr } from '../src/main/resources/static/js/formula.js';
 
 // 球种定义从 config.js 读取（单一真值来源），改步长后无需再改这里
 const BALLS = Object.fromEntries(
@@ -19,8 +20,7 @@ const BALLS = Object.fromEntries(
 
 const LEVELS = LEVEL_SPECS.map((s) => ({
   level: s.level,
-  recommendedBall: s.recommendedBall,
-  barrierHp: s.hpExponent.map((e) => '1' + '0'.repeat(e)),
+  barrierHp: s.barriers.map((expr) => parseBigIntExpr(expr).toString()),
   spike: { speed: s.spikeSpeed, travel: PHYSICS_DEFAULTS.spikeTravel },
 }));
 

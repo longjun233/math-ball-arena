@@ -1,52 +1,44 @@
 # 9 关数值表（唯一真值）
 #
-# 只写血量指数与尖刺速度；BigInteger 血量由 LevelService 现算。
+# barriers 里写的是【血量表达式】，由 LevelService 在启动时实时解析成 BigInteger，
+# 配置里不出现任何大整数，改数值只需改表达式：
+#     "1" / "50"        —— 纯整数
+#     "9.158e21"        —— 科学计数法（尾数可带小数）
+#     "1e300"           —— 10^300
 #
-# 血量曲线由 tools/design-levels.mjs 生成：
-#   1. 小球阶数【跨关累加】，第 N 关从上一关结束时的 n 继续，不重置
-#   2. 27 道屏障的血量指数【全局严格递增】，9 关是同一条成长曲线被切成 9 段
-#   3. 第 27 道（第 9 关第 3 道）锁定 10^300
+# 曲线由 tools/design-levels.mjs 生成：
+#   · 第 1 关 = 1 / 50 / 100（亲和的小整数）
+#   · 第 9 关第 3 道 = 10^300（硬约束）
+#   · 中间由一条加速曲线贯通，关内倍数从 10^1.7 递增到 10^15.8
+#   · 27 道屏障【全局严格递增】，9 关是同一条成长曲线被切成 9 段
 #
-# 尖刺速度由 tools/calibrate.mjs 用真实物理逐帧模拟、二分搜索临界速度后反推。
-# 改动任何物理参数或血量后，必须重跑：
-#     node tools/design-levels.mjs
-#     node tools/calibrate.mjs
-#     node tools/physics-selftest.mjs
+# 尖刺速度由 tools/calibrate.mjs 用真实物理逐帧模拟标定。
 mathball:
   levels:
     - level: 1
-      recommended-ball: FACTORIAL
-      hp-exponent: [4, 10, 18]
-      spike-speed: 52
+      barriers: ["1", "50", "100"]
+      spike-speed: 18
     - level: 2
-      recommended-ball: FACTORIAL
-      hp-exponent: [27, 36, 45]
-      spike-speed: 55
+      barriers: ["6105000", "60770000000000", "9.158e21"]
+      spike-speed: 20.5
     - level: 3
-      recommended-ball: FACTORIAL
-      hp-exponent: [55, 66, 76]
-      spike-speed: 58
+      barriers: ["1.035e31", "6.019e40", "1.418e51"]
+      spike-speed: 23.1
     - level: 4
-      recommended-ball: FACTORIAL
-      hp-exponent: [87, 98, 110]
-      spike-speed: 61
+      barriers: ["1.142e62", "2.772e73", "1.836e85"]
+      spike-speed: 25.6
     - level: 5
-      recommended-ball: FACTORIAL
-      hp-exponent: [121, 133, 145]
-      spike-speed: 64
+      barriers: ["3.065e97", "1.207e110", "1.061e123"]
+      spike-speed: 28.1
     - level: 6
-      recommended-ball: FACTORIAL
-      hp-exponent: [157, 170, 182]
-      spike-speed: 67
+      barriers: ["1.984e136", "7.578e149", "5.701e163"]
+      spike-speed: 30.6
     - level: 7
-      recommended-ball: FACTORIAL
-      hp-exponent: [195, 207, 220]
-      spike-speed: 70
+      barriers: ["8.182e177", "2.177e192", "1.047e207"]
+      spike-speed: 33.2
     - level: 8
-      recommended-ball: FACTORIAL
-      hp-exponent: [233, 247, 260]
-      spike-speed: 76
+      barriers: ["8.885e221", "1.304e237", "3.243e252"]
+      spike-speed: 35.7
     - level: 9
-      recommended-ball: FACTORIAL
-      hp-exponent: [273, 287, 300]
-      spike-speed: 82
+      barriers: ["1.344e268", "9.125e283", "1e300"]
+      spike-speed: 38.2

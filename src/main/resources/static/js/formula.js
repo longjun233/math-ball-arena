@@ -68,6 +68,25 @@ export function formatHp(d) {
   return formatDamage(d);
 }
 
+/**
+ * 解析血量表达式："1" / "50" / "9.158e21" / "1e300" → BigInt。
+ * 与后端 LevelService.parseBarrierValue 保持同一套规则。
+ */
+export function parseBigIntExpr(expr) {
+  const s = String(expr).trim().toLowerCase().replace(/[_\s]/g, '');
+  const eIdx = s.indexOf('e');
+  if (eIdx < 0) return BigInt(s);
+  const mantissaPart = s.slice(0, eIdx);
+  const exponent = Number(s.slice(eIdx + 1));
+  const dot = mantissaPart.indexOf('.');
+  if (dot < 0) return BigInt(mantissaPart) * 10n ** BigInt(exponent);
+  const decimals = mantissaPart.length - dot - 1;
+  const mantissa = BigInt(mantissaPart.replace('.', ''));
+  const scaled = exponent - decimals;
+  if (scaled >= 0) return mantissa * 10n ** BigInt(scaled);
+  return mantissa / 10n ** BigInt(-scaled);
+}
+
 /** 血条百分比：全程 BigInt 运算，避免转 Number 溢出。 */
 export function hpPercent(hp, maxHp) {
   if (maxHp <= 0n) return 0;

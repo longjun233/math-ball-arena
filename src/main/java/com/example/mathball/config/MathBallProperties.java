@@ -107,19 +107,20 @@ public class MathBallProperties {
         public void setBannerMs(int bannerMs) { this.bannerMs = bannerMs; }
     }
 
-    /** 单关配置：只写血量指数与尖刺速度，BigInteger 血量由 LevelService 现算。 */
+    /**
+     * 单关配置：只写三道屏障的血量表达式与尖刺速度。
+     * 表达式支持纯数字（"1"、"50"）与科学计数法（"9.158e21"、"1e300"），
+     * 由 LevelService 在启动时实时解析成 BigInteger —— 所以不写死任何大整数。
+     */
     public static class LevelSpec {
         private int level;
-        private BallFormula recommendedBall = BallFormula.FACTORIAL;
-        private List<Integer> hpExponent = new ArrayList<>();
+        private List<String> barriers = new ArrayList<>();
         private double spikeSpeed;
 
         public int getLevel() { return level; }
         public void setLevel(int level) { this.level = level; }
-        public BallFormula getRecommendedBall() { return recommendedBall; }
-        public void setRecommendedBall(BallFormula recommendedBall) { this.recommendedBall = recommendedBall; }
-        public List<Integer> getHpExponent() { return hpExponent; }
-        public void setHpExponent(List<Integer> hpExponent) { this.hpExponent = hpExponent; }
+        public List<String> getBarriers() { return barriers; }
+        public void setBarriers(List<String> barriers) { this.barriers = barriers; }
         public double getSpikeSpeed() { return spikeSpeed; }
         public void setSpikeSpeed(double spikeSpeed) { this.spikeSpeed = spikeSpeed; }
     }

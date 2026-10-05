@@ -13,16 +13,17 @@
 
 import { createRunState, stepPhysics, STATUS } from '../src/main/resources/static/js/physics.js';
 import { PHYSICS_DEFAULTS, LEVEL_SPECS, BALL_DEFAULTS } from '../src/main/resources/static/js/config.js';
+import { parseBigIntExpr } from '../src/main/resources/static/js/formula.js';
 
 // 球种定义从 config.js 读取（单一真值来源），改步长后无需再改这里
 const BALLS = Object.fromEntries(
   BALL_DEFAULTS.map((b) => [b.code, { code: b.code, name: b.name, step: b.step }])
 );
 
+// 血量从表达式实时解析（与后端 LevelService 同一套规则）
 const LEVELS = LEVEL_SPECS.map((s) => ({
   level: s.level,
-  recommendedBall: s.recommendedBall,
-  barrierHp: s.hpExponent.map((e) => '1' + '0'.repeat(e)),
+  barrierHp: s.barriers.map((expr) => parseBigIntExpr(expr).toString()),
 }));
 
 const MAX_STEPS = 4_000_000;
@@ -73,13 +74,20 @@ console.log('');
 
 // ---------- 2. 逐关临界速度 ----------
 console.log('=== 逐关临界速度与标定 ===');
-// 目标尖刺速度：平滑递增，观感上由慢到快；实际余量 k = 临界速度 / 目标速度
-const TARGET_SPEED = [52, 55, 58, 61, 64, 67, 70, 76, 82];
+// 先求出每关的临界速度，再按「平滑递增 + 统一余量」自动定速度 ——
+// 这样改了屏障布局或血量后，不需要手工重填速度表。
+const critics = LEVELS.map((lv, i) => criticalSpeed(lv, 'FACTORIAL', baseline[i].startN));
+const minCrit = Math.min(...critics.slice(1));  // 第 2 关起最紧的一关决定速度上限
+const MAX_SPEED = minCrit / 1.25;               // 最紧的一关留 25% 余量
+const MIN_SPEED = 18;                           // 第 1 关速度下限
+const TARGET_SPEED = LEVELS.map((_, i) =>
+  Math.round((MIN_SPEED + (MAX_SPEED - MIN_SPEED) * (i / (LEVELS.length - 1))) * 10) / 10);
+
 const calibrated = [];
 for (let i = 0; i < LEVELS.length; i++) {
   const lv = LEVELS[i];
   const startN = baseline[i].startN;
-  const vCrit = criticalSpeed(lv, 'FACTORIAL', startN);
+  const vCrit = critics[i];
   const speed = TARGET_SPEED[i];
   const k = vCrit / speed;
   const chk = runOne(lv, 'FACTORIAL', startN, speed);

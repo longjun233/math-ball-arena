@@ -1,17 +1,19 @@
 // 物理常量与兜底配置。
 // 与后端 application.yml / levels.yml 保持一致；后端不可用时前端必须仍能玩。
 
+import { parseBigIntExpr } from './formula.js';
+
 export const PHYSICS_DEFAULTS = {
   canvasWidth: 900,
   canvasHeight: 760,
-  gravity: 1700,          // 放慢节奏：弹跳周期 2*v0/g ≈ 0.494s（原 2400 → 0.35s 偏快）
+  gravity: 1700,          // 弹跳周期 2*v0/g ≈ 0.494s
   bounceSpeed: 420,
   vxMin: 40,
   vxMax: 160,
-  barrierGap: 110,
+  barrierGap: 180,        // 屏障间距放大 → 三道屏障占据屏幕大部分
   barrierHeight: 16,
-  barrierTopY: [390, 500, 610],
-  safeZoneTop: 670,
+  barrierTopY: [280, 460, 640],
+  safeZoneTop: 700,
   ballRadius: 16,
   ballStartY: 100,
   ballStartN: 2,
@@ -31,28 +33,25 @@ export const BALL_DEFAULTS = [
 
 // 关卡数值真值（与 src/main/resources/levels.yml 一致）
 //
-// 血量曲线由 tools/design-levels.mjs 生成：以阶乘球每 3 击推进一道屏障为节奏基准，
-// 27 道屏障的血量指数【全局严格递增】，终点锁定 10^300。
-// 9 关本质是同一条成长曲线被切成 9 段，不允许出现关卡间倒挂。
+// barriers 是【血量表达式】，由 formula.js 的 parseBigIntExpr 实时解析成 BigInt，
+// 配置里不出现任何大整数；改数值只需改表达式。
+// 曲线由 tools/design-levels.mjs 生成，27 道屏障全局严格递增，终点 10^300。
 export const LEVEL_SPECS = [
-  { level: 1, recommendedBall: 'FACTORIAL', hpExponent: [4, 10, 18], spikeSpeed: 52 },
-  { level: 2, recommendedBall: 'FACTORIAL', hpExponent: [27, 36, 45], spikeSpeed: 55 },
-  { level: 3, recommendedBall: 'FACTORIAL', hpExponent: [55, 66, 76], spikeSpeed: 58 },
-  { level: 4, recommendedBall: 'FACTORIAL', hpExponent: [87, 98, 110], spikeSpeed: 61 },
-  { level: 5, recommendedBall: 'FACTORIAL', hpExponent: [121, 133, 145], spikeSpeed: 64 },
-  { level: 6, recommendedBall: 'FACTORIAL', hpExponent: [157, 170, 182], spikeSpeed: 67 },
-  { level: 7, recommendedBall: 'FACTORIAL', hpExponent: [195, 207, 220], spikeSpeed: 70 },
-  { level: 8, recommendedBall: 'FACTORIAL', hpExponent: [233, 247, 260], spikeSpeed: 76 },
-  { level: 9, recommendedBall: 'FACTORIAL', hpExponent: [273, 287, 300], spikeSpeed: 82 },
+  { level: 1, barriers: ['1', '50', '100'], spikeSpeed: 18 },
+  { level: 2, barriers: ['6105000', '60770000000000', '9.158e21'], spikeSpeed: 20.5 },
+  { level: 3, barriers: ['1.035e31', '6.019e40', '1.418e51'], spikeSpeed: 23.1 },
+  { level: 4, barriers: ['1.142e62', '2.772e73', '1.836e85'], spikeSpeed: 25.6 },
+  { level: 5, barriers: ['3.065e97', '1.207e110', '1.061e123'], spikeSpeed: 28.1 },
+  { level: 6, barriers: ['1.984e136', '7.578e149', '5.701e163'], spikeSpeed: 30.6 },
+  { level: 7, barriers: ['8.182e177', '2.177e192', '1.047e207'], spikeSpeed: 33.2 },
+  { level: 8, barriers: ['8.885e221', '1.304e237', '3.243e252'], spikeSpeed: 35.7 },
+  { level: 9, barriers: ['1.344e268', '9.125e283', '1e300'], spikeSpeed: 38.2 },
 ];
-
-const pow10Str = (e) => '1' + '0'.repeat(e);
 
 export const FALLBACK_LEVELS = {
   levels: LEVEL_SPECS.map((s) => ({
     level: s.level,
-    recommendedBall: s.recommendedBall,
-    barrierHp: s.hpExponent.map(pow10Str),
+    barrierHp: s.barriers.map((expr) => parseBigIntExpr(expr).toString()),
     spike: { speed: s.spikeSpeed, travel: PHYSICS_DEFAULTS.spikeTravel },
     timeLimitSec: PHYSICS_DEFAULTS.spikeTravel / s.spikeSpeed,
     formulaCheck: null, // 兜底配置下跳过前后端一致性自检

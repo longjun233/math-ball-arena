@@ -5,7 +5,6 @@ import java.util.List;
 /** 单关配置响应。血量以十进制字符串下发，避免 JSON number 精度丢失。 */
 public record LevelDto(
         int level,
-        String recommendedBall,
         List<String> barrierHp,
         SpikeDto spike,
         double timeLimitSec,
