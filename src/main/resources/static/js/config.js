@@ -36,15 +36,15 @@ export const BALL_DEFAULTS = [
 // 血量只动位数：除第 1 关外全部是 10 的整数次幂；显示仍走科学计数法。
 // barriers 是【血量表达式】，由 parseBigIntExpr 实时解析，配置里不出现任何大整数。
 export const LEVEL_SPECS = [
-  { level: 1, barriers: ['1', '50', '100'], spikeSpeed: 14.8 },
-  { level: 2, barriers: ['1e3', '1e4', '1e6'], spikeSpeed: 14.8 },
-  { level: 3, barriers: ['1e8', '1e11', '1e16'], spikeSpeed: 14.8 },
-  { level: 4, barriers: ['1e22', '1e29', '1e36'], spikeSpeed: 14.8 },
-  { level: 5, barriers: ['1e45', '1e56', '1e67'], spikeSpeed: 14.8 },
-  { level: 6, barriers: ['1e79', '1e93', '1e108'], spikeSpeed: 14.8 },
-  { level: 7, barriers: ['1e130', '1e150', '1e170'], spikeSpeed: 14.8 },
-  { level: 8, barriers: ['1e180', '1e202', '1e224'], spikeSpeed: 14.8 },
-  { level: 9, barriers: ['1e248', '1e273', '1e300'], spikeSpeed: 14.8 },
+  { level: 1, barriers: ['10', '50', '100'], spikeSpeed: 16.5 },
+  { level: 2, barriers: ['200', '500', '1000'], spikeSpeed: 16.5 },
+  { level: 3, barriers: ['5000', '20000', '100000'], spikeSpeed: 16.5 },
+  { level: 4, barriers: ['1e6', '1e7', '1e8'], spikeSpeed: 16.5 },
+  { level: 5, barriers: ['1e10', '1e15', '1e20'], spikeSpeed: 16.5 },
+  { level: 6, barriers: ['1e30', '1e40', '1e50'], spikeSpeed: 16.5 },
+  { level: 7, barriers: ['1e60', '1e80', '1e100'], spikeSpeed: 16.5 },
+  { level: 8, barriers: ['1e130', '1e160', '1e190'], spikeSpeed: 16.5 },
+  { level: 9, barriers: ['1e200', '1e250', '1e300'], spikeSpeed: 16.5 },
 ];
 
 export const FALLBACK_LEVELS = {

@@ -1,44 +1,43 @@
 # 9 关数值表（唯一真值）
 #
+# 27 道屏障血量 = 用户直接指定的序列：
+#   10, 50, 100, 200, 500, 1000, 5000, 20000, 100000,
+#   10^6, 10^7, 10^8, 10^10, 10^15, 10^20,
+#   10^30, 10^40, 10^50, 10^60, 10^80, 10^100,
+#   10^130, 10^160, 10^190, 10^200, 10^250, 10^300
+# 全局严格递增；第 27 道 = 10^300。
+#
 # barriers 是【血量表达式】，由 LevelService 启动时实时解析成 BigInteger；
-# 配置里不出现任何大整数，改数值只改位数：
-#     "1" / "50"        —— 第 1 关专用的小整数
-#     "1e108"           —— 其余关卡全部是 10 的整数次幂（显示走科学计数法）
+# 配置里不出现任何大整数（10^300 只写 1e300）。
 #
-# 血量规律：除第 1 关外，27 道屏障里除首关三格外全是 10 的整数次幂，且【全局严格递增】。
-# 曲线由 tools/design-levels.mjs 定形，指数经过微调以配合「阶乘球第 7 关止步」的目标。
-#
-# 尖刺速度由 tools/calibrate.mjs 连续模拟标定（统一 14.8 px/s）：
-#   第 6 关临界 18.2px/s、第 7 关临界 11.9px/s → 取 14.8
-#   既保证阶乘球能过第 1~6 关，又保证它必定在第 7 关被尖刺追上
-#
-# 物理：g=500、v0=300 → 弹跳周期 1.2s、弹跳高度 90px；尖刺高度 30px
+# 尖刺速度由 tools/calibrate.mjs 连续模拟标定。
+# 物理：g=500、v0=300 → 弹跳周期 1.2s、弹跳高度 90px；尖刺高度 30px。
 mathball:
   levels:
     - level: 1
-      barriers: ["1", "50", "100"]
-      spike-speed: 14.8
+      barriers: ["10", "50", "100"]
+      spike-speed: 16.5
     - level: 2
-      barriers: ["1e3", "1e4", "1e6"]
-      spike-speed: 14.8
+      barriers: ["200", "500", "1000"]
+      spike-speed: 16.5
     - level: 3
-      barriers: ["1e8", "1e11", "1e16"]
-      spike-speed: 14.8
+      barriers: ["5000", "20000", "100000"]
+      spike-speed: 16.5
     - level: 4
-      barriers: ["1e22", "1e29", "1e36"]
-      spike-speed: 14.8
+      barriers: ["1e6", "1e7", "1e8"]
+      spike-speed: 16.5
     - level: 5
-      barriers: ["1e45", "1e56", "1e67"]
-      spike-speed: 14.8
+      barriers: ["1e10", "1e15", "1e20"]
+      spike-speed: 16.5
     - level: 6
-      barriers: ["1e79", "1e93", "1e108"]
-      spike-speed: 14.8
+      barriers: ["1e30", "1e40", "1e50"]
+      spike-speed: 16.5
     - level: 7
-      barriers: ["1e130", "1e150", "1e170"]
-      spike-speed: 14.8
+      barriers: ["1e60", "1e80", "1e100"]
+      spike-speed: 16.5
     - level: 8
-      barriers: ["1e180", "1e202", "1e224"]
-      spike-speed: 14.8
+      barriers: ["1e130", "1e160", "1e190"]
+      spike-speed: 16.5
     - level: 9
-      barriers: ["1e248", "1e273", "1e300"]
-      spike-speed: 14.8
+      barriers: ["1e200", "1e250", "1e300"]
+      spike-speed: 16.5
