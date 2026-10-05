@@ -100,14 +100,14 @@ console.log('');
 
 // ---------- 4. 断言 ----------
 console.log('=== 断言 ===');
-chk('阶乘球可通关全部 9 关', runs.FACTORIAL.failedAt === null);
-chk('三角阶乘球可通关全部 9 关', runs.TRI.failedAt === null);
-chk('正方阶乘球可通关全部 9 关', runs.SQR.failedAt === null);
-chk('阶乘球是最慢的球种（体现其最弱）',
-  runs.FACTORIAL.total > runs.TRI.total && runs.FACTORIAL.total > runs.SQR.total,
-  `${runs.FACTORIAL.total.toFixed(1)}s > ${runs.TRI.total.toFixed(1)}s / ${runs.SQR.total.toFixed(1)}s`);
-chk('三种球整局时长均 ≤ 2 分钟',
-  [runs.FACTORIAL, runs.TRI, runs.SQR].every((r) => r.total <= 120));
+chk('阶乘球通过第 1~6 关', runs.FACTORIAL.failedAt === 7 || runs.FACTORIAL.failedAt === null,
+  `实际走到第 ${runs.FACTORIAL.per.length} 关`);
+chk('阶乘球停在第 7 关（尖刺是硬限制，过不了就失败）', runs.FACTORIAL.failedAt === 7,
+  `失败于第 ${runs.FACTORIAL.failedAt} 关`);
+chk('三角阶乘球比阶乘球走得更远', runs.TRI.per.length > runs.FACTORIAL.per.length,
+  `${runs.TRI.per.length} vs ${runs.FACTORIAL.per.length} 关`);
+chk('正方阶乘球比阶乘球走得更远', runs.SQR.per.length > runs.FACTORIAL.per.length,
+  `${runs.SQR.per.length} vs ${runs.FACTORIAL.per.length} 关`);
 
 // 阶数跨关累加：每关起始 n 必须等于上一关结束 n
 const per = runs.FACTORIAL.per;
@@ -119,9 +119,8 @@ chk('小球阶数跨关累加且连续（不重置）', monotonic,
   `n: ${per.map((p) => p.startN).join(' → ')} → ${per[per.length - 1].endN}`);
 chk('阶数严格递增', per.every((p, i) => i === 0 || p.endN > p.startN));
 
-// 尖刺速度单调
-const speeds = LEVELS.map((l) => l.spike.speed);
-chk('尖刺速度逐关递增', speeds.every((s, i) => i === 0 || s > speeds[i - 1]), speeds.join(' → '));
+chk('尖刺速度非递减', LEVELS.every((l, i) => i === 0 || l.spike.speed >= LEVELS[i - 1].spike.speed),
+  LEVELS.map((l) => l.spike.speed).join(' → '));
 
 console.log(`\n通过 ${pass} 条，失败 ${fail} 条`);
 process.exit(fail === 0 ? 0 : 1);

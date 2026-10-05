@@ -6,18 +6,18 @@ import { parseBigIntExpr } from './formula.js';
 export const PHYSICS_DEFAULTS = {
   canvasWidth: 900,
   canvasHeight: 760,
-  gravity: 1000,          // 放慢球的下落：弹跳周期 2*v0/g = 0.6s，弹跳高度 45px
-  bounceSpeed: 300,
+  gravity: 500,           // 弹跳周期 2*v0/g = 1.2s、弹跳高度 v0²/2g = 90px（相对上一版都翻倍）
+  bounceSpeed: 300,       // 反弹速度不变
   vxMin: 40,
   vxMax: 160,
-  barrierGap: 180,        // 屏障间距放大 → 三道屏障占据屏幕大部分
+  barrierGap: 180,        // 三道屏障占据屏幕大部分
   barrierHeight: 16,
   barrierTopY: [280, 460, 640],
   safeZoneTop: 700,
   ballRadius: 16,
   ballStartY: 100,
   ballStartN: 2,
-  spikeHeight: 60,
+  spikeHeight: 30,        // 尖刺长度缩短为原来一半
   spikeTravel: 700,
   fixedStepSec: 1 / 120,
 };
@@ -33,19 +33,18 @@ export const BALL_DEFAULTS = [
 
 // 关卡数值真值（与 src/main/resources/levels.yml 一致）
 //
-// barriers 是【血量表达式】，由 formula.js 的 parseBigIntExpr 实时解析成 BigInt，
-// 配置里不出现任何大整数；改数值只需改表达式。
-// 曲线由 tools/design-levels.mjs 生成，27 道屏障全局严格递增，终点 10^300。
+// 血量只动位数：除第 1 关外全部是 10 的整数次幂；显示仍走科学计数法。
+// barriers 是【血量表达式】，由 parseBigIntExpr 实时解析，配置里不出现任何大整数。
 export const LEVEL_SPECS = [
-  { level: 1, barriers: ['1', '50', '100'], spikeSpeed: 18 },
-  { level: 2, barriers: ['187', '1815', '118000'], spikeSpeed: 18.4 },
-  { level: 3, barriers: ['60920000', '282600000000', '1.303e16'], spikeSpeed: 18.8 },
-  { level: 4, barriers: ['6.513e21', '3.799e28', '2.765e36'], spikeSpeed: 19.2 },
-  { level: 5, barriers: ['2.668e45', '3.605e55', '7.178e66'], spikeSpeed: 19.7 },
-  { level: 6, barriers: ['2.208e79', '1.097e93', '9.173e107'], spikeSpeed: 20.1 },
-  { level: 7, barriers: ['1.343e124', '3.573e141', '1.789e160'], spikeSpeed: 20.5 },
-  { level: 8, barriers: ['1.745e180', '3.422e201', '1.392e224'], spikeSpeed: 20.9 },
-  { level: 9, barriers: ['1.21e248', '2.314e273', '1e300'], spikeSpeed: 21.3 },
+  { level: 1, barriers: ['1', '50', '100'], spikeSpeed: 14.8 },
+  { level: 2, barriers: ['1e3', '1e4', '1e6'], spikeSpeed: 14.8 },
+  { level: 3, barriers: ['1e8', '1e11', '1e16'], spikeSpeed: 14.8 },
+  { level: 4, barriers: ['1e22', '1e29', '1e36'], spikeSpeed: 14.8 },
+  { level: 5, barriers: ['1e45', '1e56', '1e67'], spikeSpeed: 14.8 },
+  { level: 6, barriers: ['1e79', '1e93', '1e108'], spikeSpeed: 14.8 },
+  { level: 7, barriers: ['1e130', '1e150', '1e170'], spikeSpeed: 14.8 },
+  { level: 8, barriers: ['1e180', '1e202', '1e224'], spikeSpeed: 14.8 },
+  { level: 9, barriers: ['1e248', '1e273', '1e300'], spikeSpeed: 14.8 },
 ];
 
 export const FALLBACK_LEVELS = {

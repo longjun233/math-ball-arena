@@ -25,7 +25,7 @@ mathball:
   physics:
     canvas-width: 900
     canvas-height: 760
-    gravity: 1000
+    gravity: 500
     bounce-speed: 300
     vx-min: 40
     vx-max: 160
@@ -36,6 +36,6 @@ mathball:
     ball-radius: 16
     ball-start-y: 100
     ball-start-n: 2
-    spike-height: 60
+    spike-height: 30
     spike-travel: 700
     fixed-step-sec: 0.008333333333333333
