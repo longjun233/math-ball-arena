@@ -143,6 +143,7 @@ node tools/api-check.mjs         # 接口契约（需先启动服务）
 math-ball-arena/
 ├── mvnw.ps1                    本地 Maven 包装（固定 JDK 与仓库位置）
 ├── docs/
+│   ├── 技术栈.md                 完整技术清单（版本、依赖、算法、限制）
 │   ├── 工程提示词.md             实现规格（唯一实现依据）
 │   ├── 开发计划.md               历史决策记录
 │   └── shots/                   浏览器实测截图
